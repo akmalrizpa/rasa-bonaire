@@ -38,14 +38,14 @@ export function Logo({
   href?: string | null;
 }) {
   const content = (
-    <span className="flex items-center gap-3">
+    <span className="flex min-w-0 items-center gap-2.5 sm:gap-3">
       <LogoMark size={size} />
-      <span className="flex flex-col">
-        <span className="font-display text-[1.35rem] leading-[1.05] tracking-tight">
+      <span className="flex min-w-0 flex-col">
+        <span className="truncate font-display text-lg leading-[1.05] tracking-tight sm:text-[1.35rem]">
           Rasa <span className="text-accent">Bonaire</span>
         </span>
         {subtitle ? (
-          <span className="mt-0.5 text-[0.6rem] font-medium uppercase tracking-[0.22em] text-muted">
+          <span className="mt-0.5 hidden text-[0.6rem] font-medium uppercase tracking-[0.22em] text-muted sm:block">
             Indonesian kitchen · Bonaire
           </span>
         ) : null}
@@ -55,7 +55,7 @@ export function Logo({
 
   if (!href) return content;
   return (
-    <Link href={href} className="shrink-0">
+    <Link href={href} className="min-w-0 shrink-0">
       {content}
     </Link>
   );

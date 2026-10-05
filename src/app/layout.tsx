@@ -53,7 +53,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="flex min-h-dvh flex-col">
         <AppProviders>
           <Header user={user} settings={settings} closesAtIso={closesAt().toISOString()} />
-          <main className="flex-1">{children}</main>
+          {/* min-w-0 matters: as a flex item main would otherwise stretch to the
+              widest thing inside it instead of the width of the screen. */}
+          <main className="min-w-0 flex-1">{children}</main>
           <Footer />
         </AppProviders>
       </body>

@@ -207,7 +207,7 @@ function QrisPanel({ order }: { order: Order }) {
         </dl>
         <p className="mt-4 flex items-start gap-2 text-xs text-muted">
           <IconInfo size={14} className="mt-0.5 shrink-0" />
-          Open your banking app, scan, then press “I have paid” on the right. Nothing in this shop
+          Open your banking app, scan, then press “I have paid” below. Nothing in this shop
           removes money from anyone.
         </p>
       </div>
@@ -315,7 +315,7 @@ function WalletPanel({ order }: { order: Order }) {
           </p>
         ) : paid ? (
           <p className="mt-5 flex items-center gap-2 rounded-card bg-ok-soft px-3.5 py-3 text-xs font-medium text-ok">
-            <IconCheck size={15} /> Wallet says yes. Confirm on the right to finish.
+            <IconCheck size={15} /> Wallet says yes. Confirm below to finish.
           </p>
         ) : (
           <button

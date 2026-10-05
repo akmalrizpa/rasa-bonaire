@@ -17,6 +17,7 @@ import {
   IconWallet,
 } from "@/components/Icons";
 import { btnOutline, btnPrimary, card, field, label, pill } from "@/components/ui";
+import { useNearBottom } from "@/components/useNearBottom";
 import { shop } from "@/data/shop";
 import { formatDay, formatMoney } from "@/lib/money";
 import { deliveryFeeCents, resolvePromo } from "@/lib/pricing";
@@ -62,6 +63,7 @@ export function CheckoutForm({
   slots: Slot[];
 }) {
   const { items, ready } = useCart();
+  const nearBottom = useNearBottom();
   const [state, formAction] = useActionState(placeOrderAction, initial);
 
   const [fulfilment, setFulfilment] = useState<"pickup" | "delivery">("pickup");
@@ -484,7 +486,11 @@ export function CheckoutForm({
         </div>
 
         {/* Follows the thumb on a phone, sits in the sidebar from lg up. */}
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-sand/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+        <div
+          className={`fixed inset-x-0 bottom-0 z-40 border-t border-line bg-sand/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur transition-transform duration-200 lg:static lg:translate-y-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none ${
+            nearBottom ? "translate-y-full" : ""
+          }`}
+        >
           <SubmitButton total={totals.totalCents} disabled={!firstSlot} />
         </div>
 

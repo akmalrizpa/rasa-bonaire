@@ -4,12 +4,14 @@ import { useMemo, useRef, useState } from "react";
 import { useCart } from "@/components/AppProviders";
 import { IconCheck, IconMinus, IconPlus } from "@/components/Icons";
 import { btnPrimary, field, label as labelClass } from "@/components/ui";
+import { useNearBottom } from "@/components/useNearBottom";
 import { formatMoney } from "@/lib/money";
 import { priceLine } from "@/lib/pricing";
 import type { Product } from "@/lib/types";
 
 export function ItemPicker({ product }: { product: Product }) {
   const { add, openDrawer } = useCart();
+  const nearBottom = useNearBottom();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const [qty, setQty] = useState(1);
@@ -195,7 +197,11 @@ export function ItemPicker({ product }: { product: Product }) {
 
       {/* On a phone the option list is long, so the price and the button follow the
           thumb instead of waiting at the bottom of the card. */}
-      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-sand/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden">
+      <div
+        className={`fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-sand/95 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur transition-transform duration-200 lg:hidden ${
+          nearBottom ? "translate-y-full" : ""
+        }`}
+      >
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
             {pricing.ok ? `${qty} × ${formatMoney(unitPrice)}` : "Pick the required options"}
@@ -209,7 +215,7 @@ export function ItemPicker({ product }: { product: Product }) {
           type="button"
           disabled={product.soldOut || !pricing.ok}
           onClick={() => addToCart(mobileButtonRef.current)}
-          className={`${btnPrimary} min-w-40 py-3`}
+          className={`${btnPrimary} shrink-0 px-4 py-3`}
         >
           {product.soldOut ? "Sold out" : "Add to preorder"}
         </button>

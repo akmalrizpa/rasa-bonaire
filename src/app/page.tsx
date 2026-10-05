@@ -59,8 +59,8 @@ export default async function HomePage() {
   return (
     <div className="pb-4">
       <section className={`${pageShell} pt-12 sm:pt-16`}>
-        <div className="grid gap-12 lg:grid-cols-[1.12fr_0.88fr] lg:gap-14">
-          <div className="lg:pt-4">
+        <div className="grid min-w-0 gap-12 lg:grid-cols-[1.12fr_0.88fr] lg:gap-14">
+          <div className="min-w-0 lg:pt-4">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent">
               Preorder · {shop.street}, Kralendijk
             </p>
@@ -127,8 +127,8 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <aside className="lg:pt-16">
-            <div className="rounded-card border border-line bg-shell p-6 shadow-lift">
+          <aside className="min-w-0 lg:pt-16">
+            <div className="min-w-0 rounded-card border border-line bg-shell p-6 shadow-lift">
               <div className="flex items-start justify-between gap-4 border-b border-line pb-5">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
@@ -164,12 +164,12 @@ export default async function HomePage() {
                 </p>
               </div>
 
-              <div className="mt-6 -mb-1 flex items-end gap-3 border-t border-line pt-6">
+              <div className="mt-6 -mb-1 grid grid-cols-3 items-end gap-3 border-t border-line pt-6">
                 {featured.map((product, index) => (
                   <Link
                     key={product.id}
                     href={`/menu/${product.slug}`}
-                    className={`min-w-0 flex-1 transition hover:-translate-y-0.5 ${
+                    className={`min-w-0 transition hover:-translate-y-0.5 ${
                       index === 0 ? "translate-y-2" : index === 1 ? "-translate-y-2" : "translate-y-4"
                     }`}
                   >
@@ -249,8 +249,8 @@ export default async function HomePage() {
       </section>
 
       <section className={`${pageShell} mt-20`}>
-        <div className="grid gap-10 lg:grid-cols-[0.42fr_0.58fr] lg:gap-14">
-          <div className="lg:pt-6">
+        <div className="grid min-w-0 gap-10 lg:grid-cols-[0.42fr_0.58fr] lg:gap-14">
+          <div className="min-w-0 lg:pt-6">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
               Bonaire kitchen
             </p>
@@ -298,7 +298,7 @@ export default async function HomePage() {
       </section>
 
       <section className={`${pageShell} mt-20`}>
-        <div className="grid gap-10 lg:grid-cols-[0.36fr_0.64fr] lg:gap-14">
+        <div className="grid min-w-0 gap-10 lg:grid-cols-[0.36fr_0.64fr] lg:gap-14">
           <div>
             <h2 className={sectionTitle}>How a preorder runs</h2>
             <p className="mt-3 max-w-sm text-sm text-muted">
@@ -352,7 +352,7 @@ export default async function HomePage() {
       </section>
 
       <section className={`${pageShell} mt-20`}>
-        <div className="grid gap-8 rounded-card border border-line bg-ink px-7 py-10 text-sand lg:grid-cols-[1.1fr_0.9fr] lg:px-10">
+        <div className="grid min-w-0 gap-8 rounded-card border border-line bg-ink px-7 py-10 text-sand lg:grid-cols-[1.1fr_0.9fr] lg:px-10">
           <div>
             <h2 className="font-display text-2xl text-sand sm:text-3xl">
               The 15:00 cut-off decides what we cook tonight.

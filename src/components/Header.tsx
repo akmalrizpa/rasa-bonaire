@@ -69,7 +69,7 @@ export function Header({
       </div>
 
       <div className="border-b border-line bg-sand/90 backdrop-blur">
-        <div className="mx-auto flex h-[68px] w-full max-w-6xl items-center gap-3 px-5">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 sm:h-[68px] sm:gap-3 sm:px-5">
           <Logo size={32} />
 
           <nav className="ml-6 hidden items-center gap-1 md:flex">

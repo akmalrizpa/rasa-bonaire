@@ -112,7 +112,7 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
           ) : (
             <p className="mt-5 max-w-2xl rounded-card bg-sand px-4 py-3 text-sm text-ink-soft">
               Everything here is cooked after preorder closes at 15:00. Pick your sambal level and
-              portion on the right, and we box it for your slot.
+              portion in the order panel, and we box it for your slot.
             </p>
           )}
 
