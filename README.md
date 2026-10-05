@@ -6,6 +6,9 @@ bayar (disimulasikan) → dapat halaman status + invoice → admin kelola pesana
 Next.js 15 (App Router) + TypeScript + Tailwind v4. Isi website full bahasa Inggris, karena
 kliennya di Bonaire.
 
+Dua dokumen pendamping: `SPEC.md` (spek teknis lengkap, changelog, gotcha, backlog) dan
+`HANDOVER.md` (ringkasan serah terima dalam bahasa Inggris).
+
 ## Jalanin di lokal
 
 Butuh Node.js 20 atau lebih baru (`node -v`).
