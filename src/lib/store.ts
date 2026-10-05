@@ -193,15 +193,21 @@ function toUser(row: Record<string, unknown>): User {
 }
 
 function toSettings(row: Record<string, unknown>): Settings {
+  // The settings row is one jsonb blob written from the Settings object, so the
+  // keys are camelCase. snake_case fallbacks cover rows written by older builds.
   return {
-    storeOpen: Boolean(row.store_open),
-    announcement: String(row.announcement ?? ""),
-    deliveryFeeCents: Number(row.delivery_fee_cents ?? DEFAULT_SETTINGS.deliveryFeeCents),
-    freeDeliveryFromCents: Number(
-      row.free_delivery_from_cents ?? DEFAULT_SETTINGS.freeDeliveryFromCents,
+    storeOpen: Boolean(row.storeOpen ?? row.store_open ?? DEFAULT_SETTINGS.storeOpen),
+    announcement: String(row.announcement ?? DEFAULT_SETTINGS.announcement),
+    deliveryFeeCents: Number(
+      row.deliveryFeeCents ?? row.delivery_fee_cents ?? DEFAULT_SETTINGS.deliveryFeeCents,
     ),
-    pickupAddress: String(row.pickup_address ?? DEFAULT_SETTINGS.pickupAddress),
-    prepNote: String(row.prep_note ?? DEFAULT_SETTINGS.prepNote),
+    freeDeliveryFromCents: Number(
+      row.freeDeliveryFromCents ??
+        row.free_delivery_from_cents ??
+        DEFAULT_SETTINGS.freeDeliveryFromCents,
+    ),
+    pickupAddress: String(row.pickupAddress ?? row.pickup_address ?? DEFAULT_SETTINGS.pickupAddress),
+    prepNote: String(row.prepNote ?? row.prep_note ?? DEFAULT_SETTINGS.prepNote),
   };
 }
 
