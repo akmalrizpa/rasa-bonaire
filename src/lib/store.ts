@@ -57,7 +57,10 @@ function memory(): Memory {
       products: structuredClone(catalogProducts),
       orders: [],
       users: accountSeeds.map((seed) => ({
-        id: randomId("u"),
+        // Ids have to be derived, not random: on Vercel every serverless instance
+        // seeds its own memory, and a random id would log the same person out
+        // whenever the next request lands somewhere else.
+        id: `u-${seed.username}`,
         username: seed.username,
         name: seed.name,
         email: seed.email,

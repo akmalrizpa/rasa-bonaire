@@ -62,8 +62,11 @@ Pelanggan juga bisa daftar sendiri lewat `/register`.
 Ada dua mode, otomatis menyesuaikan isi `.env.local`.
 
 **Mode demo (default, tanpa `SUPABASE_URL`).** Menu, akun dan pesanan disimpan di memori server
-dan ditulis juga ke `localStorage` browser untuk cart. Semua fitur jalan, tapi data pesanan reset
-setiap server dev di-restart, dan di Vercel data tidak awet antar instance.
+dan ditulis juga ke `localStorage` browser untuk cart. Semua fitur jalan, tapi ada batasnya:
+pesanan reset setiap server dev di-restart, dan di Vercel tiap request bisa mendarat di instance
+berbeda, jadi pesanan (dan akun hasil daftar sendiri) bisa hilang. Empat akun demo tetap bisa
+login karena id-nya diturunkan dari username, bukan acak. Untuk data yang benar-benar awet,
+pakai Supabase.
 
 **Mode Supabase (gratis, disarankan kalau mau data awet).**
 
