@@ -10,8 +10,10 @@ export const btnOutline =
 export const btnQuiet =
   "inline-flex items-center justify-center gap-2 rounded-card px-3 py-2 text-sm font-semibold text-ink-soft transition hover:bg-sand hover:text-ink disabled:opacity-60";
 
+// text-base on phones is deliberate: iOS Safari zooms the whole page when a
+// field smaller than 16px gets focus.
 export const field =
-  "w-full rounded-card border border-line bg-shell px-3.5 py-2.5 text-sm text-ink outline-none transition placeholder:text-muted/70 focus:border-accent";
+  "w-full rounded-card border border-line bg-shell px-3.5 py-2.5 text-base text-ink outline-none transition placeholder:text-muted/70 focus:border-accent sm:text-sm";
 
 export const label = "block text-xs font-semibold uppercase tracking-[0.14em] text-muted";
 
@@ -22,3 +24,6 @@ export const pill = "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 t
 export const sectionTitle = "font-display text-2xl sm:text-3xl";
 
 export const pageShell = "mx-auto w-full max-w-6xl px-5";
+
+/** Bottom padding for pages that carry a fixed bar on phones. */
+export const mobileBarSpace = "pb-28 lg:pb-0";

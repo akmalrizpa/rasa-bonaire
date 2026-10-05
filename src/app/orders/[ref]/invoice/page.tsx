@@ -99,7 +99,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ ref: s
         </section>
 
         <section className="py-6">
-          <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[28rem] text-left text-sm">
             <thead>
               <tr className="border-b border-line text-xs uppercase tracking-[0.14em] text-muted">
                 <th className="pb-2 font-semibold">Dish</th>
@@ -133,6 +134,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ ref: s
               ))}
             </tbody>
           </table>
+          </div>
         </section>
 
         <section className="grid gap-6 border-t border-line pt-6 sm:grid-cols-2">

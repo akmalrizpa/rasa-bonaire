@@ -11,6 +11,7 @@ import type { Product } from "@/lib/types";
 export function ItemPicker({ product }: { product: Product }) {
   const { add, openDrawer } = useCart();
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const mobileButtonRef = useRef<HTMLButtonElement>(null);
   const [qty, setQty] = useState(1);
   const [note, setNote] = useState("");
   const [selection, setSelection] = useState<Record<string, string[]>>(() => {
@@ -42,7 +43,7 @@ export function ItemPicker({ product }: { product: Product }) {
     });
   };
 
-  const addToCart = () => {
+  const addToCart = (from?: HTMLElement | null) => {
     if (!pricing.ok) return;
     add(
       {
@@ -57,7 +58,7 @@ export function ItemPicker({ product }: { product: Product }) {
         note: note.trim() || undefined,
         art: product.art,
       },
-      { flyFrom: buttonRef.current },
+      { flyFrom: from ?? buttonRef.current },
     );
     openDrawer();
   };
@@ -183,14 +184,36 @@ export function ItemPicker({ product }: { product: Product }) {
         ref={buttonRef}
         type="button"
         disabled={product.soldOut || !pricing.ok}
-        onClick={addToCart}
-        className={`${btnPrimary} mt-4 w-full py-3`}
+        onClick={() => addToCart()}
+        className={`${btnPrimary} mt-4 hidden w-full py-3 lg:inline-flex`}
       >
         {product.soldOut ? "Sold out today" : "Add to preorder"}
       </button>
-      <p className="mt-2.5 text-center text-[11px] text-muted">
+      <p className="mt-2.5 hidden text-center text-[11px] text-muted lg:block">
         Nothing is charged yet. You pick the batch slot at checkout.
       </p>
+
+      {/* On a phone the option list is long, so the price and the button follow the
+          thumb instead of waiting at the bottom of the card. */}
+      <div className="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-sand/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:hidden">
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+            {pricing.ok ? `${qty} × ${formatMoney(unitPrice)}` : "Pick the required options"}
+          </p>
+          <p className="font-display text-xl tabular-nums">
+            {pricing.ok ? formatMoney(total) : formatMoney(product.priceCents)}
+          </p>
+        </div>
+        <button
+          ref={mobileButtonRef}
+          type="button"
+          disabled={product.soldOut || !pricing.ok}
+          onClick={() => addToCart(mobileButtonRef.current)}
+          className={`${btnPrimary} min-w-40 py-3`}
+        >
+          {product.soldOut ? "Sold out" : "Add to preorder"}
+        </button>
+      </div>
     </div>
   );
 }

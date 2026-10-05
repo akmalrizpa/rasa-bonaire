@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/AppProviders";
@@ -12,6 +12,15 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "sw
 const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
 
 export const dynamic = "force-dynamic";
+
+// viewport-fit=cover lets the layout use the iPhone safe areas, and themeColor
+// paints the browser bar in the sand tone so the shop does not look boxed in.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#faf6ef",
+};
 
 export const metadata: Metadata = {
   title: {

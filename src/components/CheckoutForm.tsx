@@ -409,7 +409,7 @@ export function CheckoutForm({
         </section>
       </div>
 
-      <aside className="space-y-4 lg:sticky lg:top-32 lg:h-fit">
+      <aside className="space-y-4 pb-28 lg:sticky lg:top-32 lg:h-fit lg:pb-0">
         <div className={`${card} p-5`}>
           <div className="flex items-baseline justify-between">
             <h2 className="font-display text-xl">Your order</h2>
@@ -483,9 +483,12 @@ export function CheckoutForm({
           </p>
         </div>
 
-        <SubmitButton total={totals.totalCents} disabled={!firstSlot} />
+        {/* Follows the thumb on a phone, sits in the sidebar from lg up. */}
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-sand/95 px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 backdrop-blur lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+          <SubmitButton total={totals.totalCents} disabled={!firstSlot} />
+        </div>
 
-        <Link href="/cart" className={`${btnOutline} w-full`}>
+        <Link href="/cart" className={`${btnOutline} hidden w-full lg:inline-flex`}>
           Back to the cart
         </Link>
       </aside>

@@ -84,7 +84,7 @@ export function FilterBar({
         <button
           type="button"
           onClick={() => push({ category: null })}
-          className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+          className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
             !activeCategory ? "bg-ink text-sand" : "bg-sand text-ink-soft hover:bg-line/60"
           }`}
         >
@@ -95,7 +95,7 @@ export function FilterBar({
             key={category.id}
             type="button"
             onClick={() => push({ category: category.id })}
-            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+            className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
               activeCategory === category.id
                 ? "bg-ink text-sand"
                 : "bg-sand text-ink-soft hover:bg-line/60"

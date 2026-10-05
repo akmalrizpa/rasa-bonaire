@@ -58,7 +58,7 @@ export default async function OrdersPage() {
                 >
                   <DishArt art="plate" className="hidden h-16 w-16 shrink-0 rounded-card sm:block" />
 
-                  <div className="min-w-[190px] flex-1">
+                  <div className="w-full flex-1 sm:min-w-[190px] sm:w-auto">
                     <div className="flex items-center gap-2">
                       <IconReceipt size={15} className="text-muted" />
                       <span className="font-display text-lg tracking-tight">{order.ref}</span>
@@ -66,7 +66,7 @@ export default async function OrdersPage() {
                     <p className="mt-1 text-xs text-muted">{formatDateTime(order.createdAt)}</p>
                   </div>
 
-                  <div className="min-w-[160px] flex-1">
+                  <div className="w-full flex-1 sm:min-w-[160px] sm:w-auto">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
                       {order.fulfilment === "pickup" ? "Pickup slot" : "Delivery slot"}
                     </p>
@@ -78,7 +78,7 @@ export default async function OrdersPage() {
                     <PaymentPill status={order.paymentStatus} />
                   </div>
 
-                  <div className="flex items-center gap-4 sm:min-w-[150px] sm:justify-end">
+                  <div className="flex w-full items-center justify-between gap-4 sm:w-auto sm:min-w-[150px] sm:justify-end">
                     <div className="text-right">
                       <p className="font-display text-xl tabular-nums">
                         {formatMoney(order.totalCents)}

@@ -48,9 +48,9 @@ export function Header({
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50">
+    <header className="sticky top-0 z-50 pt-[env(safe-area-inset-top)]">
       <div className="bg-ink text-sand">
-        <div className="mx-auto flex h-9 w-full max-w-6xl items-center gap-4 px-5 text-[11px]">
+        <div className="mx-auto flex h-8 w-full max-w-6xl items-center gap-4 px-5 text-[11px] sm:h-9">
           <span className="hidden shrink-0 items-center gap-1.5 font-semibold uppercase tracking-[0.16em] text-sand/60 sm:flex">
             <IconFlame size={13} />
             Batch closes 15:00

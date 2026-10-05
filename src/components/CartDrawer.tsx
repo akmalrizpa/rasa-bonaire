@@ -83,7 +83,7 @@ export function CartDrawer() {
                         <button
                           type="button"
                           onClick={() => setQty(item.key, item.qty - 1)}
-                          className="grid size-7 place-items-center rounded-[8px] transition hover:bg-sand"
+                          className="grid size-9 place-items-center rounded-[8px] transition hover:bg-sand sm:size-7"
                           aria-label="One less"
                         >
                           <IconMinus size={14} />
@@ -94,7 +94,7 @@ export function CartDrawer() {
                         <button
                           type="button"
                           onClick={() => setQty(item.key, item.qty + 1)}
-                          className="grid size-7 place-items-center rounded-[8px] transition hover:bg-sand"
+                          className="grid size-9 place-items-center rounded-[8px] transition hover:bg-sand sm:size-7"
                           aria-label="One more"
                         >
                           <IconPlus size={14} />
@@ -109,7 +109,7 @@ export function CartDrawer() {
               ))}
             </ul>
 
-            <footer className="border-t border-line bg-shell px-5 py-4">
+            <footer className="border-t border-line bg-shell px-5 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted">Subtotal</span>
                 <span className="font-display text-xl tabular-nums">{formatMoney(subtotalCents)}</span>
@@ -117,11 +117,11 @@ export function CartDrawer() {
               <p className="mt-1 text-xs text-muted">
                 Delivery fee and promo code are handled at checkout.
               </p>
-              <div className="mt-4 flex gap-2">
-                <Link href="/cart" onClick={closeDrawer} className={`${btnOutline} flex-1`}>
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+                <Link href="/cart" onClick={closeDrawer} className={`${btnOutline} flex-1 py-3`}>
                   Review cart
                 </Link>
-                <Link href="/checkout" onClick={closeDrawer} className={`${btnPrimary} flex-1`}>
+                <Link href="/checkout" onClick={closeDrawer} className={`${btnPrimary} flex-1 py-3`}>
                   Checkout <IconArrowRight size={16} />
                 </Link>
               </div>

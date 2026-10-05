@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { DishArt } from "@/components/DishArt";
 import { IconChevronRight, IconClock, IconFlame, IconStar } from "@/components/Icons";
 import { ItemPicker } from "@/components/ItemPicker";
-import { pageShell } from "@/components/ui";
+import { mobileBarSpace, pageShell } from "@/components/ui";
 import { shop } from "@/data/shop";
 import { formatMoney } from "@/lib/money";
 import { getProductBySlug, listCategories, listProducts } from "@/lib/store";
@@ -47,7 +47,7 @@ export default async function DishPage({ params }: { params: Promise<{ slug: str
     .slice(0, 3);
 
   return (
-    <div className={`${pageShell} py-10 sm:py-12`}>
+    <div className={`${pageShell} ${mobileBarSpace} py-10 sm:py-12`}>
       <nav className="flex items-center gap-1.5 text-xs text-muted" aria-label="Breadcrumb">
         <Link href="/menu" className="hover:text-ink">
           Menu

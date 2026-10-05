@@ -98,7 +98,7 @@ export function ProductCard({ product, categoryName }: { product: Product; categ
             type="button"
             disabled={product.soldOut}
             onClick={quickAdd}
-            className="inline-flex items-center gap-1.5 rounded-card bg-accent px-3.5 py-2 text-sm font-semibold text-white transition hover:bg-accent-dark disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
+            className="inline-flex items-center gap-1.5 rounded-card bg-accent px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-accent-dark disabled:cursor-not-allowed disabled:bg-line disabled:text-muted"
           >
             <IconPlus size={15} />
             {product.soldOut ? "Sold out" : "Add"}

@@ -82,7 +82,7 @@ export function CartView({ freeDeliveryFromCents }: { freeDeliveryFromCents: num
                     <button
                       type="button"
                       onClick={() => setQty(item.key, item.qty - 1)}
-                      className="grid size-8 place-items-center rounded-[8px] transition hover:bg-sand"
+                      className="grid size-9 place-items-center rounded-[8px] transition hover:bg-sand sm:size-8"
                       aria-label="One less"
                     >
                       <IconMinus size={15} />
@@ -93,7 +93,7 @@ export function CartView({ freeDeliveryFromCents }: { freeDeliveryFromCents: num
                     <button
                       type="button"
                       onClick={() => setQty(item.key, item.qty + 1)}
-                      className="grid size-8 place-items-center rounded-[8px] transition hover:bg-sand"
+                      className="grid size-9 place-items-center rounded-[8px] transition hover:bg-sand sm:size-8"
                       aria-label="One more"
                     >
                       <IconPlus size={15} />

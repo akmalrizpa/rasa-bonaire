@@ -208,7 +208,7 @@ export default async function HomePage() {
             <Link
               key={category.id}
               href={`/menu?category=${category.id}`}
-              className="rounded-full border border-line bg-shell px-4 py-2 text-xs font-semibold text-ink-soft transition hover:border-ink/25 hover:text-ink"
+              className="rounded-full border border-line bg-shell px-4 py-2.5 text-xs font-semibold text-ink-soft transition hover:border-ink/25 hover:text-ink"
             >
               {category.name}
               <span className="ml-2 tabular-nums text-muted">

@@ -186,7 +186,7 @@ export function OrdersBoard({ orders }: { orders: Order[] }) {
                     aria-expanded={open}
                     className="flex w-full flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 text-left transition hover:bg-sand/50"
                   >
-                    <span className="w-20 font-semibold tabular-nums">{order.ref}</span>
+                    <span className="w-20 shrink-0 font-semibold tabular-nums">{order.ref}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold">
                         {order.customerName}
@@ -195,21 +195,21 @@ export function OrdersBoard({ orders }: { orders: Order[] }) {
                         {order.customerPhone || "No phone on the order"}
                       </span>
                     </span>
-                    <span className="inline-flex w-28 items-center gap-1.5 text-xs text-muted tabular-nums">
-                      <IconClock size={13} />
-                      {order.slot}
-                    </span>
-                    <span className="w-16 text-right text-xs tabular-nums text-ink-soft">
-                      {units} {units === 1 ? "item" : "items"}
-                    </span>
-                    <span className="w-20 text-right text-sm font-semibold tabular-nums">
-                      {formatMoney(order.totalCents)}
-                    </span>
-                    <span className="flex items-center gap-1.5">
+                    <span className="order-last flex w-full flex-wrap items-center gap-1.5 sm:order-none sm:w-auto">
                       <StatusPill status={order.status} live />
                       <PaymentPill status={order.paymentStatus} />
                     </span>
-                    <span className="w-28 text-right text-xs text-muted tabular-nums">
+                    <span className="inline-flex items-center gap-1.5 text-xs text-muted tabular-nums sm:w-28">
+                      <IconClock size={13} />
+                      {order.slot}
+                    </span>
+                    <span className="hidden text-right text-xs tabular-nums text-ink-soft lg:inline-block lg:w-16">
+                      {units} {units === 1 ? "item" : "items"}
+                    </span>
+                    <span className="ml-auto text-right text-sm font-semibold tabular-nums sm:ml-0 sm:w-20">
+                      {formatMoney(order.totalCents)}
+                    </span>
+                    <span className="hidden text-right text-xs text-muted tabular-nums lg:inline-block lg:w-28">
                       {formatDateTime(order.createdAt)}
                     </span>
                     <IconChevronDown
