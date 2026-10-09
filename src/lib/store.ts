@@ -30,10 +30,32 @@ function db(): SupabaseClient {
   return client;
 }
 
+/** Supabase returns PostgrestError objects (plain objects, not Error instances),
+ *  so String(error) used to print "[object Object]". Pull the useful fields out
+ *  instead so Vercel logs and the error page actually say what went wrong. */
+function describeError(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object") {
+    const { code, message, details, hint } = error as {
+      code?: unknown;
+      message?: unknown;
+      details?: unknown;
+      hint?: unknown;
+    };
+    const parts = [code, message, details, hint].filter(
+      (part) => typeof part === "string" && part.length > 0,
+    );
+    if (parts.length > 0) return parts.join(" — ");
+    return JSON.stringify(error);
+  }
+  return String(error);
+}
+
 function fail(message: string, error: unknown): never {
-  const detail = error instanceof Error ? error.message : String(error);
   throw new Error(
-    `${message} (${detail}). If this is a Supabase project, make sure you ran supabase/schema.sql in the SQL editor.`,
+    `${message} (${describeError(error)}). If this is a Supabase project, make sure you ran ` +
+      `supabase/schema.sql in the SQL editor and that the project is not paused ` +
+      `(free Supabase projects pause after a week without traffic).`,
   );
 }
 
@@ -277,39 +299,93 @@ async function ensureSeeded(): Promise<void> {
   return seedPromise;
 }
 
+/* --------------------- degraded mode (database down) ---------------------- */
+
+/**
+ * Reads go through the database when one is configured, but when the database
+ * cannot be reached (project paused, wrong key, schema missing, network)
+ * the site serves the bundled demo data instead of a 500 page, and logs the
+ * reason server side. This keeps the shop browsable during an outage.
+ *
+ * Writes never fall back: an order must never be silently "saved" to memory
+ * that a serverless instance forgets seconds later. They fail loudly instead.
+ */
+async function readThrough<T>(
+  label: string,
+  read: () => Promise<T>,
+  fallback: () => T,
+): Promise<T> {
+  if (!hasDatabase) return fallback();
+  try {
+    await ensureSeeded();
+    return await read();
+  } catch (error) {
+    console.error(`[store] ${label} failed, serving demo data instead: ${describeError(error)}`);
+    return fallback();
+  }
+}
+
+/** Live check used by /api/health so a deployment can be debugged from the
+ *  browser without opening the Vercel logs. */
+export async function checkDatabase(): Promise<{
+  mode: "demo" | "supabase";
+  ok: boolean;
+  error?: string;
+}> {
+  if (!hasDatabase) return { mode: "demo", ok: true };
+  try {
+    await ensureSeeded();
+    const { error } = await db().from("products").select("id", { count: "exact", head: true });
+    if (error) return { mode: "supabase", ok: false, error: describeError(error) };
+    return { mode: "supabase", ok: true };
+  } catch (error) {
+    return { mode: "supabase", ok: false, error: describeError(error) };
+  }
+}
+
 /* ------------------------------- categories ------------------------------- */
 
 export async function listCategories(): Promise<Category[]> {
-  if (!hasDatabase) {
-    return [...memory().categories].sort((a, b) => a.sort - b.sort);
-  }
-  await ensureSeeded();
-  const { data, error } = await db().from("categories").select("*").order("sort");
-  if (error) fail("Could not load categories", error);
-  return (data ?? []).map((row) => ({
-    id: String(row.id),
-    name: String(row.name),
-    blurb: String(row.blurb ?? ""),
-    sort: Number(row.sort ?? 0),
-  }));
+  return readThrough(
+    "Reading categories",
+    async () => {
+      const { data, error } = await db().from("categories").select("*").order("sort");
+      if (error) fail("Could not load categories", error);
+      return (data ?? []).map((row) => ({
+        id: String(row.id),
+        name: String(row.name),
+        blurb: String(row.blurb ?? ""),
+        sort: Number(row.sort ?? 0),
+      }));
+    },
+    () => [...memory().categories].sort((a, b) => a.sort - b.sort),
+  );
 }
 
 /* -------------------------------- products -------------------------------- */
 
 export async function listProducts(): Promise<Product[]> {
-  if (!hasDatabase) return [...memory().products];
-  await ensureSeeded();
-  const { data, error } = await db().from("products").select("*").order("name");
-  if (error) fail("Could not load the menu", error);
-  return (data ?? []).map(toProduct);
+  return readThrough(
+    "Reading the menu",
+    async () => {
+      const { data, error } = await db().from("products").select("*").order("name");
+      if (error) fail("Could not load the menu", error);
+      return (data ?? []).map(toProduct);
+    },
+    () => [...memory().products],
+  );
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  if (!hasDatabase) return memory().products.find((product) => product.slug === slug) ?? null;
-  await ensureSeeded();
-  const { data, error } = await db().from("products").select("*").eq("slug", slug).maybeSingle();
-  if (error) fail("Could not load that dish", error);
-  return data ? toProduct(data) : null;
+  return readThrough(
+    "Reading a dish",
+    async () => {
+      const { data, error } = await db().from("products").select("*").eq("slug", slug).maybeSingle();
+      if (error) fail("Could not load that dish", error);
+      return data ? toProduct(data) : null;
+    },
+    () => memory().products.find((product) => product.slug === slug) ?? null,
+  );
 }
 
 export async function updateProduct(id: string, patch: Partial<Product>): Promise<void> {
@@ -351,11 +427,15 @@ export async function insertOrder(order: Order): Promise<void> {
 }
 
 export async function getOrderByRef(ref: string): Promise<Order | null> {
-  if (!hasDatabase) return memory().orders.find((order) => order.ref === ref) ?? null;
-  await ensureSeeded();
-  const { data, error } = await db().from("orders").select("*").eq("ref", ref).maybeSingle();
-  if (error) fail("Could not load that order", error);
-  return data ? toOrder(data) : null;
+  return readThrough(
+    "Reading an order",
+    async () => {
+      const { data, error } = await db().from("orders").select("*").eq("ref", ref).maybeSingle();
+      if (error) fail("Could not load that order", error);
+      return data ? toOrder(data) : null;
+    },
+    () => memory().orders.find((order) => order.ref === ref) ?? null,
+  );
 }
 
 export async function listOrders(filter?: {
@@ -363,22 +443,25 @@ export async function listOrders(filter?: {
   status?: OrderStatus;
   limit?: number;
 }): Promise<Order[]> {
-  if (!hasDatabase) {
-    let orders = [...memory().orders];
-    if (filter?.userId) orders = orders.filter((order) => order.userId === filter.userId);
-    if (filter?.status) orders = orders.filter((order) => order.status === filter.status);
-    orders.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    return filter?.limit ? orders.slice(0, filter.limit) : orders;
-  }
-
-  await ensureSeeded();
-  let query = db().from("orders").select("*").order("created_at", { ascending: false });
-  if (filter?.userId) query = query.eq("user_id", filter.userId);
-  if (filter?.status) query = query.eq("status", filter.status);
-  if (filter?.limit) query = query.limit(filter.limit);
-  const { data, error } = await query;
-  if (error) fail("Could not load orders", error);
-  return (data ?? []).map(toOrder);
+  return readThrough(
+    "Reading orders",
+    async () => {
+      let query = db().from("orders").select("*").order("created_at", { ascending: false });
+      if (filter?.userId) query = query.eq("user_id", filter.userId);
+      if (filter?.status) query = query.eq("status", filter.status);
+      if (filter?.limit) query = query.limit(filter.limit);
+      const { data, error } = await query;
+      if (error) fail("Could not load orders", error);
+      return (data ?? []).map(toOrder);
+    },
+    () => {
+      let orders = [...memory().orders];
+      if (filter?.userId) orders = orders.filter((order) => order.userId === filter.userId);
+      if (filter?.status) orders = orders.filter((order) => order.status === filter.status);
+      orders.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      return filter?.limit ? orders.slice(0, filter.limit) : orders;
+    },
+  );
 }
 
 export async function updateOrder(ref: string, patch: Partial<Order>): Promise<Order | null> {
@@ -409,40 +492,54 @@ export async function updateOrder(ref: string, patch: Partial<Order>): Promise<O
 }
 
 export async function countOrders(): Promise<number> {
-  if (!hasDatabase) return memory().orders.length;
-  await ensureSeeded();
-  const { count, error } = await db().from("orders").select("id", { count: "exact", head: true });
-  if (error) fail("Could not count orders", error);
-  return count ?? 0;
+  return readThrough(
+    "Counting orders",
+    async () => {
+      const { count, error } = await db().from("orders").select("id", { count: "exact", head: true });
+      if (error) fail("Could not count orders", error);
+      return count ?? 0;
+    },
+    () => memory().orders.length,
+  );
 }
 
 /* ---------------------------------- users --------------------------------- */
 
 export async function findUserByUsername(username: string): Promise<User | null> {
   const clean = username.trim().toLowerCase();
-  if (!hasDatabase) {
-    return memory().users.find((user) => user.username.toLowerCase() === clean) ?? null;
-  }
-  await ensureSeeded();
-  const { data, error } = await db().from("users").select("*").ilike("username", clean).maybeSingle();
-  if (error) fail("Could not check that username", error);
-  return data ? toUser(data) : null;
+  return readThrough(
+    "Looking up an account",
+    async () => {
+      const { data, error } = await db().from("users").select("*").ilike("username", clean).maybeSingle();
+      if (error) fail("Could not check that username", error);
+      return data ? toUser(data) : null;
+    },
+    () => memory().users.find((user) => user.username.toLowerCase() === clean) ?? null,
+  );
 }
 
 export async function findUserById(id: string): Promise<User | null> {
-  if (!hasDatabase) return memory().users.find((user) => user.id === id) ?? null;
-  await ensureSeeded();
-  const { data, error } = await db().from("users").select("*").eq("id", id).maybeSingle();
-  if (error) fail("Could not load that account", error);
-  return data ? toUser(data) : null;
+  return readThrough(
+    "Reading an account",
+    async () => {
+      const { data, error } = await db().from("users").select("*").eq("id", id).maybeSingle();
+      if (error) fail("Could not load that account", error);
+      return data ? toUser(data) : null;
+    },
+    () => memory().users.find((user) => user.id === id) ?? null,
+  );
 }
 
 export async function listUsers(): Promise<User[]> {
-  if (!hasDatabase) return [...memory().users].sort((a, b) => a.username.localeCompare(b.username));
-  await ensureSeeded();
-  const { data, error } = await db().from("users").select("*").order("username");
-  if (error) fail("Could not load accounts", error);
-  return (data ?? []).map(toUser);
+  return readThrough(
+    "Reading accounts",
+    async () => {
+      const { data, error } = await db().from("users").select("*").order("username");
+      if (error) fail("Could not load accounts", error);
+      return (data ?? []).map(toUser);
+    },
+    () => [...memory().users].sort((a, b) => a.username.localeCompare(b.username)),
+  );
 }
 
 export async function insertUser(user: User): Promise<void> {
@@ -485,11 +582,19 @@ export async function updateUser(id: string, patch: Partial<User>): Promise<void
 /* -------------------------------- settings -------------------------------- */
 
 export async function getSettings(): Promise<Settings> {
-  if (!hasDatabase) return { ...memory().settings };
-  await ensureSeeded();
-  const { data, error } = await db().from("settings").select("*").eq("key", "store").maybeSingle();
-  if (error) fail("Could not load settings", error);
-  return data ? toSettings(data.value as Record<string, unknown>) : { ...DEFAULT_SETTINGS };
+  return readThrough(
+    "Reading settings",
+    async () => {
+      const { data, error } = await db()
+        .from("settings")
+        .select("*")
+        .eq("key", "store")
+        .maybeSingle();
+      if (error) fail("Could not load settings", error);
+      return data ? toSettings(data.value as Record<string, unknown>) : { ...DEFAULT_SETTINGS };
+    },
+    () => ({ ...memory().settings }),
+  );
 }
 
 export async function saveSettings(patch: Partial<Settings>): Promise<Settings> {

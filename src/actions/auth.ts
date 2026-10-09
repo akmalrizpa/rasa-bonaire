@@ -84,7 +84,17 @@ export async function registerAction(_prev: AuthState, formData: FormData): Prom
     createdAt: new Date().toISOString(),
   };
 
-  await insertUser(user);
+  try {
+    await insertUser(user);
+  } catch (error) {
+    // Database unreachable (or schema missing): the account was NOT created,
+    // so do not sign the person into a session that pretends it was.
+    console.error("[auth] Could not save the new account:", error);
+    return {
+      error:
+        "We could not create your account just now. Please try again in a minute, or order as a guest from the menu.",
+    };
+  }
   await startSession(user);
   redirect("/orders");
 }
@@ -107,7 +117,12 @@ export async function updateProfileAction(_prev: AuthState, formData: FormData):
     return { error: "That email address is not complete." };
   }
 
-  await updateUser(user.id, { name, email, phone });
+  try {
+    await updateUser(user.id, { name, email, phone });
+  } catch (error) {
+    console.error("[auth] Could not save the profile:", error);
+    return { error: "We could not save that just now. Please try again in a minute." };
+  }
   revalidatePath("/account");
   return { notice: "Saved. The kitchen sees the new details on your next order." };
 }

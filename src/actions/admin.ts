@@ -55,6 +55,21 @@ function slugify(value: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** Wraps a database write so a broken connection surfaces as a form error
+ *  instead of crashing the admin page. Nothing is reported as saved when it
+ *  was not. */
+async function guarded(run: () => Promise<AdminState>): Promise<AdminState> {
+  try {
+    return await run();
+  } catch (error) {
+    console.error("[admin] Database write failed:", error);
+    return {
+      error:
+        "The database did not accept that change, so it was not saved. Try again in a minute — and check /api/health if it keeps failing.",
+    };
+  }
+}
+
 export async function setOrderStatusAction(formData: FormData): Promise<AdminState> {
   await requireAdmin();
 
@@ -71,22 +86,24 @@ export async function setOrderStatusAction(formData: FormData): Promise<AdminSta
   const cashOnPickup =
     status === "completed" && order.paymentMethod === "cash" && order.paymentStatus !== "paid";
 
-  await updateOrder(ref, {
-    status,
-    events: [
-      ...order.events,
-      { at: now, kind: "status", label: note || ORDER_STATUS_LABEL[status] },
-    ],
-    ...(cashOnPickup
-      ? { paymentStatus: "paid" as const, paidAt: order.paidAt ?? now }
-      : {}),
+  return guarded(async () => {
+    await updateOrder(ref, {
+      status,
+      events: [
+        ...order.events,
+        { at: now, kind: "status", label: note || ORDER_STATUS_LABEL[status] },
+      ],
+      ...(cashOnPickup
+        ? { paymentStatus: "paid" as const, paidAt: order.paidAt ?? now }
+        : {}),
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/orders");
+    revalidatePath(`/orders/${ref}`);
+
+    return { notice: `${ref}: ${ORDER_STATUS_LABEL[status]}` };
   });
-
-  revalidatePath("/admin");
-  revalidatePath("/admin/orders");
-  revalidatePath(`/orders/${ref}`);
-
-  return { notice: `${ref}: ${ORDER_STATUS_LABEL[status]}` };
 }
 
 export async function updateDishAction(formData: FormData): Promise<AdminState> {
@@ -106,23 +123,25 @@ export async function updateDishAction(formData: FormData): Promise<AdminState> 
 
   const badge = has(formData, "badge") ? String(formData.get("badge")).trim() : existing.badge ?? "";
 
-  await updateProduct(id, {
-    name,
-    description: has(formData, "description")
-      ? String(formData.get("description")).trim()
-      : existing.description,
-    badge: badge || undefined,
-    priceCents,
-    prepMinutes: toMinutes(formData.get("prepMinutes")),
-    soldOut: formData.get("soldOut") === "on",
-    active: formData.get("active") === "on",
+  return guarded(async () => {
+    await updateProduct(id, {
+      name,
+      description: has(formData, "description")
+        ? String(formData.get("description")).trim()
+        : existing.description,
+      badge: badge || undefined,
+      priceCents,
+      prepMinutes: toMinutes(formData.get("prepMinutes")),
+      soldOut: formData.get("soldOut") === "on",
+      active: formData.get("active") === "on",
+    });
+
+    revalidatePath("/admin/menu");
+    revalidatePath("/menu");
+    revalidatePath(`/menu/${existing.slug}`);
+
+    return { notice: `${name} saved.` };
   });
-
-  revalidatePath("/admin/menu");
-  revalidatePath("/menu");
-  revalidatePath(`/menu/${existing.slug}`);
-
-  return { notice: `${name} saved.` };
 }
 
 export async function createDishAction(formData: FormData): Promise<AdminState> {
@@ -163,12 +182,14 @@ export async function createDishAction(formData: FormData): Promise<AdminState> 
     optionGroups: [],
   };
 
-  await createProduct(product);
+  return guarded(async () => {
+    await createProduct(product);
 
-  revalidatePath("/admin/menu");
-  revalidatePath("/menu");
+    revalidatePath("/admin/menu");
+    revalidatePath("/menu");
 
-  return { notice: `${name} is on the menu with no variants.` };
+    return { notice: `${name} is on the menu with no variants.` };
+  });
 }
 
 export async function saveSettingsAction(
@@ -183,19 +204,21 @@ export async function saveSettingsAction(
     return { error: "Delivery fees have to be numbers, like 3.50 or 0." };
   }
 
-  await saveSettings({
-    storeOpen: formData.get("storeOpen") === "on",
-    announcement: String(formData.get("announcement") ?? "").trim(),
-    deliveryFeeCents,
-    freeDeliveryFromCents,
-    pickupAddress: String(formData.get("pickupAddress") ?? "").trim(),
-    prepNote: String(formData.get("prepNote") ?? "").trim(),
+  return guarded(async () => {
+    await saveSettings({
+      storeOpen: formData.get("storeOpen") === "on",
+      announcement: String(formData.get("announcement") ?? "").trim(),
+      deliveryFeeCents,
+      freeDeliveryFromCents,
+      pickupAddress: String(formData.get("pickupAddress") ?? "").trim(),
+      prepNote: String(formData.get("prepNote") ?? "").trim(),
+    });
+
+    revalidatePath("/admin/settings");
+    revalidatePath("/");
+
+    return { notice: "Saved. The shop pages use this on the next load." };
   });
-
-  revalidatePath("/admin/settings");
-  revalidatePath("/");
-
-  return { notice: "Saved. The shop pages use this on the next load." };
 }
 
 export async function setUserRoleAction(formData: FormData): Promise<AdminState> {
@@ -216,8 +239,10 @@ export async function setUserRoleAction(formData: FormData): Promise<AdminState>
     return { error: `${target.username} is the only admin. Promote someone else first.` };
   }
 
-  await updateUser(id, { role });
-  revalidatePath("/admin/customers");
+  return guarded(async () => {
+    await updateUser(id, { role });
+    revalidatePath("/admin/customers");
 
-  return { notice: `${target.username} is now ${role === "admin" ? "an admin" : "a customer"}.` };
+    return { notice: `${target.username} is now ${role === "admin" ? "an admin" : "a customer"}.` };
+  });
 }

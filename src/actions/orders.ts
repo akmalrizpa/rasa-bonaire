@@ -67,7 +67,17 @@ export async function placeOrderAction(
   const result = await buildOrder(input, user);
   if (!result.ok) return { error: result.error };
 
-  await insertOrder(result.order);
+  try {
+    await insertOrder(result.order);
+  } catch (error) {
+    // The database is configured but unreachable (or the schema is missing).
+    // Fail honestly: the order was NOT saved, so never pretend it was.
+    console.error("[orders] Could not save the order:", error);
+    return {
+      error:
+        "We could not save your order just now and nothing was charged. Please try again in a minute, or call the kitchen on +599 717 0240 and we take the order by phone.",
+    };
+  }
   revalidatePath("/admin/orders");
   redirect(`/pay/${result.order.ref}`);
 }

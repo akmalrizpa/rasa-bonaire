@@ -101,6 +101,26 @@ git commit -m "feat: add rasa bonaire preorder store"
 git push
 ```
 
+## Kalau web 500 / tidak jalan di Vercel
+
+Buka `https://nama-deployment.vercel.app/api/health` — endpoint ini menjawab
+`{"mode":"demo"|"supabase","ok":true|false,"error":"..."}` dan langsung memberi tahu
+apa yang salah. Penyebab paling sering:
+
+| Gejala di /api/health | Penyebab | Perbaikan |
+| --- | --- | --- |
+| `ok:false`, error `ENOTFOUND` / `fetch failed` | Project Supabase **paused** (free tier berhenti setelah ±1 minggu tanpa trafik) atau URL salah | Buka dashboard Supabase → Restore project; cek ulang `SUPABASE_URL` di Vercel |
+| `ok:false`, error `relation "products" does not exist` | `supabase/schema.sql` belum dijalankan | Supabase → SQL Editor → paste seluruh isi file itu → Run |
+| `ok:false`, error `row-level security` / `JWT` | Yang diisi `anon key`, bukan `service_role` key | Copy ulang **service_role** key dari Project Settings → API |
+| `mode:"demo"` padahal env sudah diisi | Nama env var salah ketik, atau ada spasi/kutip di nilainya | Harus persis `SUPABASE_URL` dan `SUPABASE_SERVICE_ROLE_KEY` (Production, Preview, dan Development) |
+
+Sejak commit "keep the site up when the database is down": kalau Supabase ter-set
+tapi tidak bisa dihubungi, halaman-halaman toko tetap terbuka memakai data demo
+(sehingga pengunjung tidak mendapat halaman 500), tapi **pesanan baru akan
+ditolak** dengan pesan yang jelas — lebih baik gagal jujur daripada pesanan
+hilang diam-diam di memori serverless. Perbaiki penyebabnya lewat tabel di atas,
+lalu pesanan otomatis tersimpan lagi ke Supabase.
+
 ## Isi kontennya di mana
 
 | Yang mau diubah | File |
